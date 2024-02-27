@@ -24,8 +24,24 @@ int worker_create(worker_t *thread, pthread_attr_t *attr,
                   void *(*function)(void *), void *arg)
 {
     // - create Thread Control Block (TCB)
+    TCB *new_tcb = (TCB *)malloc(sizeof(TCB));
+    if (new_tcb == NULL) {
+        return -1; // Failed to allocate memory for TCB
+    }
+
+    new_tcb->tid = next_tid++;
+    new_tcb->status = READY;
+
     // - create and initialize the context of this worker thread
+
+    getcontext(&(new_tcb->context));
+    new_tcb->context.uc_link = NULL;
+    new_tcb->context.uc_stack.ss_sp = new_tcb->stack;
+    new_tcb->context.uc_stack.ss_size = STACK_SIZE;
+    makecontext(&(new_tcb->context), (void (*)(void))function, 1, arg);
+
     // - allocate space of stack for this thread to run
+    *thread = new_tcb;
     // after everything is set, push this thread into run queue and
     // - make it ready for the execution.
     return 0;
