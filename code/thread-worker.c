@@ -1,6 +1,6 @@
 // File:	thread-worker.c
 
-// List all group member's name:
+// List all group member's name: Eliana Stevens (jes503)
 /*
  */
 // username of iLab:
