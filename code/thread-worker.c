@@ -30,20 +30,22 @@ int worker_create(worker_t *thread, pthread_attr_t *attr,
     }
 
     new_tcb->tid = next_tid++;
-    new_tcb->status = READY;
 
     // - create and initialize the context of this worker thread
 
     getcontext(&(new_tcb->context));
     new_tcb->context.uc_link = NULL;
     new_tcb->context.uc_stack.ss_sp = new_tcb->stack;
-    new_tcb->context.uc_stack.ss_size = STACK_SIZE;
-    makecontext(&(new_tcb->context), (void (*)(void))function, 1, arg);
+    new_tcb->context.uc_stack.ss_size = STACK_SIZE; //context creation
+
+    makecontext(&(new_tcb->context), (void (*)(void))function, 1, arg); //context initialization
 
     // - allocate space of stack for this thread to run
-    *thread = new_tcb;
-    // after everything is set, push this thread into run queue and
-    // - make it ready for the execution.
+
+    *thread = new_tcb; //space in TCB
+
+    // after everything is set, push this thread into run queue and make it ready for the execution.
+    new_tcb->status = READY;
     return 0;
 }
 
