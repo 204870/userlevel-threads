@@ -54,6 +54,7 @@ int worker_yield()
 {
 
     // - change worker thread's state from Running to Ready
+  new_tcb->status = READY;
     // - save context of this thread to its thread control block
     // - switch from thread context to scheduler context
     return 0;
@@ -65,6 +66,9 @@ void worker_exit(void *value_ptr)
 {
     // - if value_ptr is provided, save return value
     // - de-allocate any dynamic memory created when starting this thread (could be done here or elsewhere)
+   if (*value_ptr != NULL){
+    free(value_ptr)
+  } //or something like that
 }
 
 /* Wait for thread termination */
