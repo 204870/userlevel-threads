@@ -58,13 +58,13 @@ void enqueue(RunQueue *queue, TCB *thread) {
 }
 
 // Function to remove and return the front thread from the run queue
-TCB* dequeue(RunQueue *queue) {
+struct TCB* dequeue(RunQueue *queue) {
     if (queue->front == NULL) {
         // Queue is empty
         return NULL;
     }
     RunQueueNode *temp = queue->front;
-    TCB *thread = temp->thread;
+    struct TCB *thread = temp->thread;
     queue->front = queue->front->next;
     if (queue->front == NULL) {
         queue->rear = NULL;
@@ -80,7 +80,8 @@ int is_empty(RunQueue *queue) {
 
 // INITIALIZE ALL YOUR OTHER VARIABLES HERE
 int init_scheduler_done = 0;
-RunQueue *queue = init_run_queue();
+RunQueue *my_queue;
+*my_queue = init_run_queue();
 
 
 /* create a new thread */
@@ -88,12 +89,12 @@ int worker_create(worker_t *thread, pthread_attr_t *attr,
                   void *(*function)(void *), void *arg)
 {
     // - create Thread Control Block (TCB)
-    TCB *new_tcb = (TCB *)malloc(sizeof(TCB));
+    struct TCB *new_tcb = (TCB *)malloc(sizeof(TCB));
     if (new_tcb == NULL) {
         return -1; // Failed to allocate memory for TCB
     }
 
-    new_tcb->tid = next_tid++;
+    new_tcb->tid++;
 
     // - create and initialize the context of this worker thread
 
@@ -106,11 +107,11 @@ int worker_create(worker_t *thread, pthread_attr_t *attr,
 
     // - allocate space of stack for this thread to run
 
-    *thread = new_tcb; //space in TCB
+    //*thread = new_tcb; //space in TCB
 
     // after everything is set, push this thread into run queue and make it ready for the execution.
     new_tcb->status = READY;
-    enqueue(queue, thread);
+    enqueue(my_queue, new_tcb);
     return 0;
 }
 
@@ -118,7 +119,7 @@ int worker_create(worker_t *thread, pthread_attr_t *attr,
 int worker_yield()
 {
     //set current tcb to thread at front of the queue
-    TCB *current_tcb = queue->front->thread;
+    struct TCB *current_tcb = my_queue.front->thread;
 
     // - change worker thread's state from Running to Ready
     current_tcb->status = READY;
@@ -127,7 +128,7 @@ int worker_yield()
     ucontext_t current_context = current_tcb->context;
 
     // - switch from thread context to scheduler context
-    swapcontext(&current_context, &scheduler_context)
+    swapcontext(&current_context, &scheduler_context);
     return 0;
 
 };
@@ -217,13 +218,15 @@ static void sched_rr()
 {
     // - your own implementation of RR
     // (feel free to modify arguments and return types)
+    printf("make the scheduler dumbass");
+    return -1;
 
 }
 
 /* Preemptive MLFQ scheduling algorithm */
 static void sched_mlfq()
 {
-    println("in CS416, this is not required for me");
+    printf("in CS416, this is not required for me");
     return -1;
 
 }
