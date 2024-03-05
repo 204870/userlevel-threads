@@ -14,9 +14,73 @@
 #define QUANTUM 10 * 1000
 
 
+/* run queue implementation */
+
+//run queue node
+typedef struct RunQueueNode {
+    TCB *thread;
+    struct RunQueueNode *next;
+} RunQueueNode;
+
+// Define the structure for the run queue
+typedef struct RunQueue {
+    RunQueueNode *front;
+    RunQueueNode *rear;
+} RunQueue;
+
+RunQueue* init_run_queue() {
+    RunQueue *queue = (RunQueue*)malloc(sizeof(RunQueue));
+    if (queue == NULL) {
+        // Handle memory allocation failure
+        return NULL;
+    }
+    queue->front = NULL;
+    queue->rear = NULL;
+    return queue;
+}
+
+// Function to add a thread to the run queue
+void enqueue(RunQueue *queue, TCB *thread) {
+    RunQueueNode *new_node = (RunQueueNode*)malloc(sizeof(RunQueueNode));
+    if (new_node == NULL) {
+        // Handle memory allocation failure
+        return;
+    }
+    new_node->thread = thread;
+    new_node->next = NULL;
+    if (queue->rear == NULL) {
+        queue->front = new_node;
+        queue->rear = new_node;
+    } else {
+        queue->rear->next = new_node;
+        queue->rear = new_node;
+    }
+}
+
+// Function to remove and return the front thread from the run queue
+TCB* dequeue(RunQueue *queue) {
+    if (queue->front == NULL) {
+        // Queue is empty
+        return NULL;
+    }
+    RunQueueNode *temp = queue->front;
+    TCB *thread = temp->thread;
+    queue->front = queue->front->next;
+    if (queue->front == NULL) {
+        queue->rear = NULL;
+    }
+    free(temp);
+    return thread;
+}
+
+// Function to check if the run queue is empty
+int is_empty(RunQueue *queue) {
+    return (queue->front == NULL);
+}
+
 // INITIALIZE ALL YOUR OTHER VARIABLES HERE
 int init_scheduler_done = 0;
-
+RunQueue *queue = init_run_queue();
 
 
 /* create a new thread */
@@ -46,17 +110,22 @@ int worker_create(worker_t *thread, pthread_attr_t *attr,
 
     // after everything is set, push this thread into run queue and make it ready for the execution.
     new_tcb->status = READY;
+    enqueue(queue, thread);
     return 0;
 }
 
 /* give CPU possession to other user-level worker threads voluntarily */
 int worker_yield()
 {
+    //set current tcb to thread at front of the queue
+    TCB *current_tcb = queue->front->thread;
 
     // - change worker thread's state from Running to Ready
     current_tcb->status = READY;
+
     // - save context of this thread to its thread control block
     ucontext_t current_context = current_tcb->context;
+
     // - switch from thread context to scheduler context
     swapcontext(&current_context, &scheduler_context)
     return 0;
@@ -154,8 +223,8 @@ static void sched_rr()
 /* Preemptive MLFQ scheduling algorithm */
 static void sched_mlfq()
 {
-    // - your own implementation of MLFQ
-    // (feel free to modify arguments and return types)
+    println("in CS416, this is not required for me");
+    return -1;
 
 }
 
